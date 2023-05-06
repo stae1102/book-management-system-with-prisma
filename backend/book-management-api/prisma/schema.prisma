@@ -9,3 +9,52 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+// USER
+
+model User {
+  id  String @id @default(uuid())
+  email String @db.Text @unique
+  password String @db.Text
+
+  createdAt DateTime @db.Timestamp(6) @default(now())
+  updatedAt DateTime @updatedAt
+
+  UserInfo UserInfo?
+  ledgers Ledger[]
+  // change relation
+}
+
+model UserInfo {
+  nickname String
+  phoneNumber String
+
+  userId String @unique
+  User User @relation(fields: [userId], references: [id])
+}
+
+// BOOK
+
+model Book {
+  id String @id @default(uuid())
+  name String @db.VarChar(100)
+  bookType BookType
+  code String @db.VarChar(15)
+
+  ledgers Ledger[]
+}
+
+enum BookType {
+  BOOK
+  PAPER
+  JOURNAL
+}
+
+model Ledger {
+  borrower User @relation(fields: [borrowerId], references: [id])
+  borrowedBook Book @relation(fields: [borrowedBookId], references: [id])
+
+  borrowerId String
+  borrowedBookId String
+  @@id([borrowerId, borrowedBookId])
+}
